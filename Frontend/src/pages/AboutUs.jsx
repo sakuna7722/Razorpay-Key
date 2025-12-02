@@ -25,7 +25,7 @@ function AboutUs() {
 
   return (
     <div className="bg-gray-50">
-      {/* Header */}
+      {/* Header this is he */}
       <section className="relative bg-gradient-to-r from-orange-500 to-orange-600 text-white py-20 text-center">
         <div className="max-w-screen-xl mx-auto px-6">
           <h2 className="text-4xl sm:text-5xl font-extrabold mb-6 drop-shadow-lg">
