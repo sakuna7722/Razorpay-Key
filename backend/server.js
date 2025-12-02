@@ -357,5 +357,5 @@ process.on("uncaughtException", (err) => {
 });
 
 setInterval(() => {
-  fetch("https://full-project-dv97.onrender.com/api/health");
+  fetch("https://razorpay-key.onrender.com/api/health");
 }, 10 * 60 * 1000); // every 10 minutes
