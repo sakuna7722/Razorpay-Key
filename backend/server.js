@@ -60,11 +60,42 @@ app.use("/api/", limiter);
 // };
 // app.use(cors(corsOptions));
 
-// ✅ FINAL CORS FIX - localhost + Vercel + mobile sab chalega forever
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
+// ✅ BEST CORS SETUP FOR PRODUCTION (2025 standard)
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests with no origin (like mobile apps, Postman, Render cron)
+      if (!origin) return callback(null, true);
+
+      const allowedOrigins = [
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "https://yourdomain.com", // ← apna actual frontend domain daal dena baad mein
+        "https://yourapp.vercel.app",
+        // add more when you deploy
+      ];
+
+      if (
+        allowedOrigins.includes(origin) ||
+        origin.includes("localhost") ||
+        origin.includes("vercel.app")
+      ) {
+        callback(null, true);
+      } else {
+        // Temporarily allow all in production until you set proper domain
+        // Remove this line after adding your real domain ↑
+        callback(null, true);
+        // Ya phir strict karna chahe toh: callback(new Error("Not allowed by CORS"))
+      }
+    },
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
+
+// Pre-flight requests handle
+app.options("*", cors());
 
 app.use(express.json());
 app.use(require("cookie-parser")());
@@ -173,8 +204,10 @@ app.get("/api/health", (req, res) => {
 
 // ✅ Connect MongoDB
 const mongoURI = process.env.MONGO_URI;
-const dbName = "E-COMMERCE"; // Your DB name
+const dbName = "GooglePay"; // Your DB name
 const fullMongoURI = `${mongoURI}${dbName}?retryWrites=true&w=majority`;
+
+// mongodb://localhost:27017/
 
 mongoose
   .connect(fullMongoURI)
@@ -204,19 +237,22 @@ const server = app.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
 });
 
-// ✅ Socket.io Setup for Real-time Chat
-// const io = new Server(server, {
-//   cors: {
-//     origin: process.env.CORS_ORIGIN || "http://localhost:5173",
-//     methods: ["GET", "POST"],
-//   },
-// });
-
 const io = new Server(server, {
   cors: {
-    origin: true,               // ab sab allow
+    origin: (origin, callback) => {
+      if (!origin) return callback(null, true);
+      if (
+        origin.includes("localhost") ||
+        origin.includes("vercel.app") ||
+        origin.includes("yourdomain.com") // ← baad mein add kar dena
+      ) {
+        callback(null, true);
+      } else {
+        callback(null, true); // ← abhi ke liye allow (deploy ke baad strict kar dena)
+      }
+    },
     methods: ["GET", "POST"],
-    credentials: true
+    credentials: true,
   },
 });
 
