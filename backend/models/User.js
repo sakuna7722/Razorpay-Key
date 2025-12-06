@@ -13,8 +13,8 @@ const kycSchema = new mongoose.Schema({
     ],
     uppercase: true,
     match: [/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, "Invalid PAN number format"],
-    unique: true,
-    default: null, // Add this
+    sparse: true, // ← YE ADD KIYA
+    default: null,
   },
   aadhaarNumber: {
     type: String,
@@ -25,7 +25,8 @@ const kycSchema = new mongoose.Schema({
       "Aadhaar number is required when KYC is complete",
     ],
     match: [/^\d{12}$/, "Invalid Aadhaar number format"],
-    default: null, // Add this
+    sparse: true, // ← YE BHI ADD KAR DO
+    default: null,
   },
   accountNumber: {
     type: String,

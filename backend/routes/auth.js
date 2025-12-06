@@ -22,15 +22,110 @@ function generateSimpleReferralCode(name) {
 
 // 🧠 Signup Route
 
+// router.post("/signup", async (req, res) => {
+//   const { firstName, lastName, email, mobile, state, password, name, referredBy } = req.body;
+
+//   console.log("Signup request body:", req.body); // Debug log
+
+//   try {
+//     // Validate required fields
+//     if (!firstName || !lastName || !email || !state || !password || !name) {
+//       return res.status(400).json({ message: "Please fill in all required fields" });
+//     }
+
+//     // Check if user already exists
+//     let user = await User.findOne({ email });
+//     if (user) {
+//       return res.status(400).json({ message: "User already exists" });
+//     }
+
+//     // Hash password
+//     const salt = await bcrypt.genSalt(10);
+//     const hashedPassword = await bcrypt.hash(password, salt);
+
+//     // Generate unique referral code
+//     const referralCode = await generateUniqueReferralCode(name); // Use utils function
+
+//     // Convert referredBy (referral code) to user ObjectId
+//     let referredByUserId = null;
+//     if (referredBy) {
+//       const refUser = await User.findOne({
+//         $or: [{ referralCode: referredBy }, { myReferralCode: referredBy }],
+//       });
+//       if (refUser) {
+//         referredByUserId = refUser._id;
+//       } else {
+//         return res.status(400).json({ message: "Invalid referral code" });
+//       }
+//     }
+
+//     // Create new user
+//     user = new User({
+//       firstName,
+//       lastName,
+//       email,
+//       mobile: mobile || "",
+//       state,
+//       password: hashedPassword,
+//       name,
+//       affiliateId: uuidv4(),
+//       referralCode,
+//       myReferralCode: referralCode,
+//       referredBy: referredByUserId,
+//       isAdmin: false,
+//     });
+
+//     await user.save();
+//     console.log("User saved successfully:", user.email);
+
+//     // Update referrer's referralHistory
+//     if (referredByUserId) {
+//       await User.updateOne(
+//         { _id: referredByUserId },
+//         { $push: { referralHistory: user._id } }
+//       );
+//       console.log("Updated referralHistory for referrer:", referredByUserId);
+//     }
+
+//     // Generate token
+//     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+//       expiresIn: "30d",
+//     });
+
+//     res.status(201).json({
+//       token,
+//       user: {
+//         id: user._id,
+//         email: user.email,
+//         name: user.name,
+//         affiliateId: user.affiliateId,
+//         referralCode: user.referralCode,
+//         referredBy: user.referredBy,
+//         isAdmin: user.isAdmin,
+//       },
+//     });
+//   } catch (error) {
+//     console.error("Signup error:", error.message);
+//     res.status(500).json({ message: "Server error", error: error.message });
+//   }
+// });
+
+// 🧠 Signup Route - FIXED VERSION (COPY-PASTE YE PURA)
 router.post("/signup", async (req, res) => {
   const { firstName, lastName, email, mobile, state, password, name, referredBy } = req.body;
 
-  console.log("Signup request body:", req.body); // Debug log
+  console.log("Signup request body:", req.body); // Debug
 
   try {
-    // Validate required fields
-    if (!firstName || !lastName || !email || !state || !password || !name) {
+    // Required fields check
+    if (!firstName || !lastName || !email || !state || !password) {
       return res.status(400).json({ message: "Please fill in all required fields" });
+    }
+
+    // Safe full name banao (ye line naya hai - important!)
+    const fullName = (name || `${firstName} ${lastName}`.trim()).trim();
+    if (!fullName || fullName.length < 2) {
+      return res.status(400).json({ message: "Invalid name" });
     }
 
     // Check if user already exists
@@ -43,10 +138,10 @@ router.post("/signup", async (req, res) => {
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Generate unique referral code
-    const referralCode = await generateUniqueReferralCode(name); // Use utils function
+    // Ye line safe kar di (pehle crash ho raha tha yahan)
+    const referralCode = await generateUniqueReferralCode(fullName || "user");
 
-    // Convert referredBy (referral code) to user ObjectId
+    // referredBy logic (same rahega)
     let referredByUserId = null;
     if (referredBy) {
       const refUser = await User.findOne({
@@ -59,7 +154,7 @@ router.post("/signup", async (req, res) => {
       }
     }
 
-    // Create new user
+    // Create user
     user = new User({
       firstName,
       lastName,
@@ -67,7 +162,7 @@ router.post("/signup", async (req, res) => {
       mobile: mobile || "",
       state,
       password: hashedPassword,
-      name,
+      name: fullName,  // ye safe name use kar rahe hain
       affiliateId: uuidv4(),
       referralCode,
       myReferralCode: referralCode,
@@ -78,16 +173,14 @@ router.post("/signup", async (req, res) => {
     await user.save();
     console.log("User saved successfully:", user.email);
 
-    // Update referrer's referralHistory
+    // Rest of code same rahega (referralHistory, token, etc.)
     if (referredByUserId) {
       await User.updateOne(
         { _id: referredByUserId },
         { $push: { referralHistory: user._id } }
       );
-      console.log("Updated referralHistory for referrer:", referredByUserId);
     }
 
-    // Generate token
     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
       expiresIn: "30d",
     });
@@ -100,13 +193,12 @@ router.post("/signup", async (req, res) => {
         name: user.name,
         affiliateId: user.affiliateId,
         referralCode: user.referralCode,
-        referredBy: user.referredBy,
         isAdmin: user.isAdmin,
       },
     });
   } catch (error) {
     console.error("Signup error:", error.message);
-    res.status(500).json({ message: "Server error", error: error.message });
+    res.status(500).json({ message: "Server error" });
   }
 });
 
