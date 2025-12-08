@@ -2,71 +2,7 @@
 const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 
-const kycSchema = new mongoose.Schema({
-  panNumber: {
-    type: String,
-    required: [
-      function () {
-        return this.isKycComplete === true;
-      },
-      "PAN number is required when KYC is complete",
-    ],
-    uppercase: true,
-    match: [/^[A-Z]{5}[0-9]{4}[A-Z]{1}$/, "Invalid PAN number format"],
-    sparse: true, // ← YE ADD KIYA
-    default: null,
-  },
-  aadhaarNumber: {
-    type: String,
-    required: [
-      function () {
-        return this.isKycComplete === true;
-      },
-      "Aadhaar number is required when KYC is complete",
-    ],
-    match: [/^\d{12}$/, "Invalid Aadhaar number format"],
-    sparse: true, // ← YE BHI ADD KAR DO
-    default: null,
-  },
-  accountNumber: {
-    type: String,
-    required: [
-      function () {
-        return this.isKycComplete === true;
-      },
-      "Account number is required when KYC is complete",
-    ],
-    match: [/^\d{9,18}$/, "Invalid account number format"],
-    default: null, // Add this
-  },
-  ifscCode: {
-    type: String,
-    required: [
-      function () {
-        return this.isKycComplete === true;
-      },
-      "IFSC code is required when KYC is complete",
-    ],
-    uppercase: true,
-    match: [/^[A-Z]{4}0[A-Z0-9]{6}$/, "Invalid IFSC code format"],
-    default: null, // Add this
-  },
-  isKycComplete: {
-    type: Boolean,
-    default: false,
-  },
-  verifiedAt: {
-    type: Date,
-    required: [
-      // Add this for consistency
-      function () {
-        return this.isKycComplete === true;
-      },
-      "Verified date is required when KYC is complete",
-    ],
-    default: null,
-  },
-});
+
 
 const userSchema = new mongoose.Schema(
   {
@@ -76,17 +12,7 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     mobile: { type: String },
 
-    kyc: {
-      type: kycSchema,
-      default: () => ({
-        isKycComplete: false,
-        panNumber: null,
-        aadhaarNumber: null,
-        accountNumber: null,
-        ifscCode: null,
-        verifiedAt: null,
-      }),
-    },
+   
     referredBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
