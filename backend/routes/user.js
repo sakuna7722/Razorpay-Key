@@ -67,7 +67,7 @@ router.get("/by-referral-code/:code", async (req, res) => {
     res.status(500).json({ message: "Server error" });
   }
 });
-
+ 
 // ✅ GET /api/user/referrals
 router.get("/referrals", protect, checkEnrolledCourses, async (req, res) => {
   try {
@@ -83,8 +83,8 @@ router.get("/referrals", protect, checkEnrolledCourses, async (req, res) => {
     res.json({
       referrals,
       earnings: user.affiliateEarnings || 0,
-      accountNumber: user.accountNumber || null,
-      ifscCode: user.ifscCode || null,
+      // accountNumber: user.accountNumber || null,
+      // ifscCode: user.ifscCode || null,
     });
   } catch (err) {
     console.error("Error fetching referrals:", err);
@@ -120,7 +120,7 @@ router.get(
         totalReferrals: referrals.length,
         commissionPaid: user.commissionPaid || 0,
         status: user.isActive ? "active" : "pending",
-        isKycComplete: user.kycDetails?.isKycComplete || false,
+        // isKycComplete: user.kycDetails?.isKycComplete || false,
       });
     } catch (err) {
       console.error("❌ Error fetching referral metrics:", err);
@@ -129,115 +129,115 @@ router.get(
   }
 );
 // ✅ POST /api/user/account-info — set payout info only once
-router.post(
-  "/account-info",
-  protect,
-  checkEnrolledCourses,
-  async (req, res) => {
-    try {
-      console.log("POST /api/user/account-info - Request body:", req.body);
-      const { accountNumber, ifscCode, panNumber, aadhaarNumber } = req.body;
-      const user = await User.findById(req.user._id);
+// router.post(
+//   "/account-info",
+//   protect,
+//   checkEnrolledCourses,
+//   async (req, res) => {
+//     try {
+//       console.log("POST /api/user/account-info - Request body:", req.body);
+//       const { accountNumber, ifscCode, panNumber, aadhaarNumber } = req.body;
+//       const user = await User.findById(req.user._id);
 
-      console.log("User found:", user);
-      if (!user) {
-        console.log("User not found for ID:", req.user._id);
-        return res.status(404).json({ message: "User not found" });
-      }
+//       console.log("User found:", user);
+//       if (!user) {
+//         console.log("User not found for ID:", req.user._id);
+//         return res.status(404).json({ message: "User not found" });
+//       }
 
-      if (user.kyc.isKycComplete) {
-        console.log("KYC already completed for user:", user._id);
-        return res.status(400).json({
-          message: "❌ KYC already completed and cannot be changed.",
-        });
-      }
+//       if (user.kyc.isKycComplete) {
+//         console.log("KYC already completed for user:", user._id);
+//         return res.status(400).json({
+//           message: "❌ KYC already completed and cannot be changed.",
+//         });
+//       }
 
-      console.log("User affiliate earnings:", user.affiliateEarnings);
-      if (user.affiliateEarnings <= 0) {
-        console.log("Earnings zero, cannot update details for user:", user._id);
-        return res.status(400).json({
-          message:
-            "❌ Your Current Earning Balance is Zero. You Can Not Update Bank Details",
-        });
-      }
+//       console.log("User affiliate earnings:", user.affiliateEarnings);
+//       if (user.affiliateEarnings <= 0) {
+//         console.log("Earnings zero, cannot update details for user:", user._id);
+//         return res.status(400).json({
+//           message:
+//             "❌ Your Current Earning Balance is Zero. You Can Not Update Bank Details",
+//         });
+//       }
 
-      if (!accountNumber || !ifscCode || !panNumber || !aadhaarNumber) {
-        console.log("Missing required fields:", {
-          accountNumber,
-          ifscCode,
-          panNumber,
-          aadhaarNumber,
-        });
-        return res.status(400).json({
-          message:
-            "❌ All fields (account number, IFSC code, PAN number, Aadhaar number) are required.",
-        });
-      }
+//       if (!accountNumber || !ifscCode || !panNumber || !aadhaarNumber) {
+//         console.log("Missing required fields:", {
+//           accountNumber,
+//           ifscCode,
+//           panNumber,
+//           aadhaarNumber,
+//         });
+//         return res.status(400).json({
+//           message:
+//             "❌ All fields (account number, IFSC code, PAN number, Aadhaar number) are required.",
+//         });
+//       }
 
-      user.kyc.accountNumber = accountNumber;
-      user.kyc.ifscCode = ifscCode;
-      user.kyc.panNumber = panNumber;
-      user.kyc.aadhaarNumber = aadhaarNumber;
-      user.kyc.isKycComplete = true;
-      user.kyc.verifiedAt = new Date();
+//       user.kyc.accountNumber = accountNumber;
+//       user.kyc.ifscCode = ifscCode;
+//       user.kyc.panNumber = panNumber;
+//       user.kyc.aadhaarNumber = aadhaarNumber;
+//       user.kyc.isKycComplete = true;
+//       user.kyc.verifiedAt = new Date();
 
-      console.log("Saving user with updated details:", {
-        accountNumber: user.kyc.accountNumber,
-        ifscCode: user.kyc.ifscCode,
-        panNumber: user.kyc.panNumber,
-        aadhaarNumber: user.kyc.aadhaarNumber,
-        isKycComplete: user.kyc.isKycComplete,
-        verifiedAt: user.kyc.verifiedAt,
-      });
-      await user.save();
+//       console.log("Saving user with updated details:", {
+//         accountNumber: user.kyc.accountNumber,
+//         ifscCode: user.kyc.ifscCode,
+//         panNumber: user.kyc.panNumber,
+//         aadhaarNumber: user.kyc.aadhaarNumber,
+//         isKycComplete: user.kyc.isKycComplete,
+//         verifiedAt: user.kyc.verifiedAt,
+//       });
+//       await user.save();
 
-      console.log("Account info saved successfully for user:", user._id);
-      res.json({ message: "✅ Account info saved successfully" });
-    } catch (err) {
-      console.error("Error in POST /api/user/account-info:", err);
-      res.status(500).json({ message: "Failed to set account info" });
-    }
-  }
-);
+//       console.log("Account info saved successfully for user:", user._id);
+//       res.json({ message: "✅ Account info saved successfully" });
+//     } catch (err) {
+//       console.error("Error in POST /api/user/account-info:", err);
+//       res.status(500).json({ message: "Failed to set account info" });
+//     }
+//   }
+// );
 
 // ✅ GET /api/user/payout-details — fetch existing payout info
-router.get(
-  "/payout-details",
-  protect,
-  checkEnrolledCourses,
-  async (req, res) => {
-    try {
-      console.log("GET /api/user/payout-details - User ID:", req.user._id);
-      const user = await User.findById(req.user._id);
-      console.log("User found:", user);
-      if (!user) {
-        console.log("User not found for ID:", req.user._id);
-        return res.status(404).json({ message: "User not found" });
-      }
-      console.log("Returning payout details:", {
-        accountNumber: user.kyc.accountNumber || "",
-        ifscCode: user.kyc.ifscCode || "",
-        panNumber: user.kyc.panNumber || "",
-        aadhaarNumber: user.kyc.aadhaarNumber || "",
-        isKycComplete: user.kyc.isKycComplete || false,
-      });
-      res.json({
-        accountNumber: user.kyc.accountNumber || "",
-        ifscCode: user.kyc.ifscCode || "",
-        panNumber: user.kyc.panNumber || "",
-        aadhaarNumber: user.kyc.aadhaarNumber || "",
-        isKycComplete: user.kyc.isKycComplete || false,
-      });
-    } catch (err) {
-      console.error("Error fetching payout details:", err);
-      res.status(500).json({ message: "Server error" });
-    }
-  }
-);
+// router.get(
+//   "/payout-details",
+//   protect,
+//   checkEnrolledCourses,
+//   async (req, res) => {
+//     try {
+//       console.log("GET /api/user/payout-details - User ID:", req.user._id);
+//       const user = await User.findById(req.user._id);
+//       console.log("User found:", user);
+//       if (!user) {
+//         console.log("User not found for ID:", req.user._id);
+//         return res.status(404).json({ message: "User not found" });
+//       }
+//       console.log("Returning payout details:", {
+//         accountNumber: user.kyc.accountNumber || "",
+//         ifscCode: user.kyc.ifscCode || "",
+//         panNumber: user.kyc.panNumber || "",
+//         aadhaarNumber: user.kyc.aadhaarNumber || "",
+//         isKycComplete: user.kyc.isKycComplete || false,
+//       });
+//       res.json({
+//         accountNumber: user.kyc.accountNumber || "",
+//         ifscCode: user.kyc.ifscCode || "",
+//         panNumber: user.kyc.panNumber || "",
+//         aadhaarNumber: user.kyc.aadhaarNumber || "",
+//         isKycComplete: user.kyc.isKycComplete || false,
+//       });
+//     } catch (err) {
+//       console.error("Error fetching payout details:", err);
+//       res.status(500).json({ message: "Server error" });
+//     }
+//   }
+// );
 
 // ✅ GET /api/user/profile — get current logged in user info
 router.get("/profile", protect, checkEnrolledCourses, async (req, res) => {
-  const user = await User.findById(req.user._id).select("-password");
+  // const user = await User.findById(req.user._id).select("-password");
   if (!user) return res.status(404).json({ message: "User not found" });
   res.json(user);
 });
