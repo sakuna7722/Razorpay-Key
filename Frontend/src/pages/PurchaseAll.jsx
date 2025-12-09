@@ -46,7 +46,7 @@ function PurchaseAll() {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
               affiliateId: localStorage.getItem('ref') || null,
-              amount,
+              amount: amount / 100,
             });
 
             if (verifyRes.data.success) {
@@ -60,8 +60,9 @@ function PurchaseAll() {
           }
         },
         prefill: {
-          name: 'Your Name',
-          email: 'user@example.com',
+          name: localStorage.getItem('firstName') || 'Your Name',
+          email: localStorage.getItem('userEmail') || 'user@example.com',
+          contact: localStorage.getItem('userPhone') || '',
         },
         theme: {
           color: '#4f46e5',

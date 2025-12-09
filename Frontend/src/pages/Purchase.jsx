@@ -40,7 +40,7 @@ function Purchase() {
           setError('Course not found.');
         }
       } catch (err) {
-        // console.error('❌ Error fetching course:', err.response?.status, err.response?.data || err.message);
+        console.error('❌ Error fetching course:', err.response?.status, err.response?.data || err.message);
         if (err.response?.status === 404) {
           setError('Course not found. Please check the course URL or contact support.');
         } else {
@@ -82,16 +82,15 @@ function Purchase() {
 
       // console.log("🔗 Referral code for purchase:", referralCode);
 
-      // ✅ FIX: Convert discount to number before arithmetic
       const discount = course.discount ? parseFloat(course.discount) : 0;
-      const amount = course.price * (1 - discount / 100);
+      const rupeesAmount = course.price * (1 - discount / 100);
+      const amountInPaise = Math.round(rupeesAmount * 100);  // ✅ Paise mein convert, integer bana
 
       const orderRes = await api.post("/courses/purchase/create-order", {
         courseId: course._id,
-        amount: amount,
+        amount: amountInPaise,  // ✅ Paise bhej backend ko
         affiliateId: referralCode,
       });
-
       const { id: order_id, amount: orderAmount, key } = orderRes.data;
 
       const options = {
@@ -142,8 +141,9 @@ function Purchase() {
           }
         },
         prefill: {
-          name: 'User Name',
-          email: 'user@example.com',
+          name: localStorage.getItem('firstName') || 'User Name',  // Signup se saved name
+          email: localStorage.getItem('userEmail') || 'user@example.com',  // Real email
+          contact: '',  // Optional, agar phone save kiya toh add kar
         },
         theme: {
           color: '#4f46e5',
