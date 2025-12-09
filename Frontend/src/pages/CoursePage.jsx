@@ -3,7 +3,7 @@ import { useContext, useEffect, useState } from "react";
 import axios from "../api/axios";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion";
 import { Button } from "../components/ui/button";
-import { StarIcon, ClockIcon, UserIcon, PlayCircleIcon } from "@heroicons/react/24/solid";  
+import { StarIcon, ClockIcon, UserIcon, PlayCircleIcon } from "@heroicons/react/24/solid";
 import { AuthContext } from "../context/AuthContext";
 
 function CoursePage() {
@@ -14,24 +14,38 @@ function CoursePage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  useEffect(() => {
-    if (user === undefined) return;  // wait for AuthContext to load
+ useEffect(() => {
+  if (user === undefined) return;  // wait for AuthContext to load
 
-    if (!user) {
-      navigate("/auth/login");
-    }
-  }, [user]);
+  if (!user) {
+    navigate("/auth/login");
+  }
+}, [user]);
+
 
   useEffect(() => {
     const fetchCourse = async () => {
       try {
+        // console.log(`[CoursePage] Fetching course for slug: ${slug}`);
         const token = localStorage.getItem("token");
+        // console.log("[CoursePage] Token:", token ? "Token present" : "No token");
         const res = await axios.get(`/courses/slug/${slug}`, {
           headers: token ? { Authorization: `Bearer ${token}` } : {},
         });
+        // console.log("[CoursePage] Course data received:", {
+        //   id: res.data._id,
+        //   name: res.data.name,
+        //   hasPurchased: res.data.hasPurchased,
+        //   videos: res.data.videos.map((v) => ({
+        //     title: v.title,
+        //     url: v.url ? "Included" : "Hidden",
+        //     freePreview: v.freePreview,
+        //   })),
+        // });
         setCourse(res.data);
         setError(null);
       } catch (err) {
+        // console.error("[CoursePage] Error fetching course:", err.response?.data || err.message);
         setError("Failed to load course. Please try again later.");
       } finally {
         setLoading(false);
@@ -65,6 +79,12 @@ function CoursePage() {
       </div>
     );
 
+  // console.log("[CoursePage] Rendering course:", {
+  //   name: course.name,
+  //   hasPurchased: course.hasPurchased,
+  //   videoCount: course.videos.length,
+  // });
+
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
       <div className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white rounded-2xl shadow-2xl p-8 mb-8">
@@ -72,18 +92,15 @@ function CoursePage() {
         <p className="text-lg sm:text-xl text-gray-100 mb-6">{course.description || "No description available."}</p>
         <div className="flex flex-wrap gap-4 items-center mb-6">
           <div className="flex items-center space-x-2">
-            {/* ✅ Style added to fix SVG height */}
-            <StarIcon className="w-6 h-6 text-yellow-400" style={{ height: '24px' }} />
+            <StarIcon className="w-6 h-6 text-yellow-400" />
             <span className="text-lg">{course.rating || "4.5"} ({"1,234 reviews"})</span>
           </div>
           <div className="flex items-center space-x-2">
-            {/* ✅ Style added */}
-            <ClockIcon className="w-6 h-6" style={{ height: '24px' }} />
+            <ClockIcon className="w-6 h-6" />
             <span>{course.duration || "10h 30m"}</span>
           </div>
           <div className="flex items-center space-x-2">
-            {/* ✅ Style added */}
-            <UserIcon className="w-6 h-6" style={{ height: '24px' }} />
+            <UserIcon className="w-6 h-6" />
             <span>{course.instructor || "John Doe"}</span>
           </div>
           <div className="flex items-center space-x-2">
@@ -107,6 +124,12 @@ function CoursePage() {
         {course.hasPurchased && course.videos && course.videos.length > 0 ? (
           <Accordion type="single" collapsible className="space-y-3">
             {course.videos.map((video, index) => {
+              // console.log("[CoursePage] Rendering video:", {
+              //   title: video.title,
+              //   url: video.url ? "Included" : "Hidden",
+              //   freePreview: video.freePreview,
+              //   hasPurchased: course.hasPurchased,
+              // });
               return (
                 <AccordionItem
                   key={index}
@@ -115,8 +138,7 @@ function CoursePage() {
                 >
                   <AccordionTrigger className="flex items-center justify-between p-5 text-lg font-medium text-gray-800 bg-gray-100 hover:bg-gray-200">
                     <div className="flex items-center space-x-4">
-                      {/* ✅ Style added */}
-                      <PlayCircleIcon className="w-8 h-8 text-indigo-600" style={{ height: '32px' }} />  {/* w-8 ke liye 32px */}
+                      <PlayCircleIcon className="w-8 h-8 text-indigo-600" />
                       <div className="text-left">
                         <span className="font-semibold">{video.title}</span>
                         {video.freePreview && (
@@ -167,6 +189,7 @@ function CoursePage() {
             Purchase the course to access the content.
           </p>
         )}
+        {/* Course Progress Tracker and Additional Info remain unchanged */}
         <div className="mt-8">
           <h3 className="text-xl font-semibold text-gray-900 mb-3">Your Progress</h3>
           <div className="w-full bg-gray-200 rounded-full h-4">
@@ -211,7 +234,6 @@ function CoursePage() {
           >
             Back to Courses
           </Button>
-          {/* ❌ Yeh test icon remove kar diya – unnecessary tha */}
         </div>
       </div>
     </div>

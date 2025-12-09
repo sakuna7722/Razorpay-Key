@@ -26,7 +26,7 @@ function Purchase() {
     const ref = searchParams.get("ref");
     if (ref) {
       localStorage.setItem("ref", ref); // ✅ Store referral ID
-      localStorage.setItem("referralCode", ref); // ✅ Also store as referralCode for consistency
+      localStorage.setItem("referralCode", ref);
     }
   }, [location.search]);
 
@@ -40,7 +40,7 @@ function Purchase() {
           setError('Course not found.');
         }
       } catch (err) {
-        console.error('❌ Error fetching course:', err.response?.status, err.response?.data || err.message);
+        // console.error('❌ Error fetching course:', err.response?.status, err.response?.data || err.message);
         if (err.response?.status === 404) {
           setError('Course not found. Please check the course URL or contact support.');
         } else {
@@ -82,22 +82,24 @@ function Purchase() {
 
       // console.log("🔗 Referral code for purchase:", referralCode);
 
+      // ✅ FIX: Convert discount to number before arithmetic
       const discount = course.discount ? parseFloat(course.discount) : 0;
-      const rupeesAmount = course.price * (1 - discount / 100);
-      const amountInPaise = Math.round(rupeesAmount * 100);  // ✅ Paise mein convert, integer bana
+      const amount = course.price * (1 - discount / 100);
 
       const orderRes = await api.post("/courses/purchase/create-order", {
         courseId: course._id,
-        amount: amountInPaise,  // ✅ Paise bhej backend ko
+        amount: amount,
         affiliateId: referralCode,
       });
+
       const { id: order_id, amount: orderAmount, key } = orderRes.data;
 
       const options = {
         key: key,
         amount: orderAmount,
         currency: "INR",
-        name: "Course Purchase",
+        name: "Leadsgurukul",
+        image: "https://leadsgurukul.com/lead2.png",
         description: course.name,
         order_id,
         handler: async function (response) {
@@ -136,14 +138,14 @@ function Purchase() {
               alert("❌ Payment verification failed");
             }
           } catch (err) {
-            // console.error("❌ Verification error:", err);
+            console.error("❌ Verification error:", err);
             alert("Payment verification failed.");
           }
         },
         prefill: {
-          name: localStorage.getItem('firstName') || 'User Name',  // Signup se saved name
-          email: localStorage.getItem('userEmail') || 'user@example.com',  // Real email
-          contact: '',  // Optional, agar phone save kiya toh add kar
+          name: JSON.parse(localStorage.getItem("user"))?.name || "",
+          email: JSON.parse(localStorage.getItem("user"))?.email || "",
+
         },
         theme: {
           color: '#4f46e5',

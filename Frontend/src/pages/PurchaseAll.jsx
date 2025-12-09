@@ -36,8 +36,9 @@ function PurchaseAll() {
         key,
         amount,
         currency: 'INR',
-        name: 'All Courses Access',
-        description: 'Unlock all premium courses',
+        name: "Leadsgurukul",
+        description: "All Courses Access - Leadsgurukul",
+
         order_id,
         handler: async function (response) {
           try {
@@ -46,7 +47,7 @@ function PurchaseAll() {
               razorpay_payment_id: response.razorpay_payment_id,
               razorpay_signature: response.razorpay_signature,
               affiliateId: localStorage.getItem('ref') || null,
-              amount: amount / 100,
+              amount,
             });
 
             if (verifyRes.data.success) {
@@ -60,9 +61,8 @@ function PurchaseAll() {
           }
         },
         prefill: {
-          name: localStorage.getItem('firstName') || 'Your Name',
-          email: localStorage.getItem('userEmail') || 'user@example.com',
-          contact: localStorage.getItem('userPhone') || '',
+          name: 'Your Name',
+          email: 'user@example.com',
         },
         theme: {
           color: '#4f46e5',
