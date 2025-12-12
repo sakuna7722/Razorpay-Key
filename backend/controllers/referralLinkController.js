@@ -1,3 +1,4 @@
+// backend/controllers/referralLinkController.js
 const User = require("../models/User");
 const Referral = require("../models/Referral");
 
@@ -41,7 +42,7 @@ exports.trackReferralClick = async (req, res) => {
 };
 
 // GET /referral/metrics
-exports.getReferralMetrics = async (req, res) => {
+exports.getReferralMetrics = async (req, res) => {exports.getReferralMetrics = async (req, res) => {
   try {
     const userId = req.user._id;
     console.log("🔍 Incoming request to /referral/metrics for User ID:", userId);

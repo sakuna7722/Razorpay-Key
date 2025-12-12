@@ -2,8 +2,6 @@
 const mongoose = require("mongoose");
 const { v4: uuidv4 } = require("uuid");
 
-
-
 const userSchema = new mongoose.Schema(
   {
     firstName: { type: String, required: true },
@@ -12,7 +10,6 @@ const userSchema = new mongoose.Schema(
     password: { type: String, required: true },
     mobile: { type: String },
 
-   
     referredBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
@@ -60,6 +57,10 @@ const userSchema = new mongoose.Schema(
     isActive: {
       type: Boolean,
       default: true,
+    },
+    hasPurchased: {
+      type: Boolean,
+      default: false,
     },
 
     activatedAt: {
